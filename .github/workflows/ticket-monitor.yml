@@ -21,7 +21,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install -e .
+    
+    - name: Create logs directory
+      run: mkdir -p logs
     
     - name: Run ticket check
       env:
@@ -29,12 +32,12 @@ jobs:
         EMAIL_TO: ${{ secrets.EMAIL_TO }}
         EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
       run: |
-        python ticket_alert.py --once
+        python -m ticket_alert.cli --once
     
     - name: Upload logs
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ticket-logs
-        path: ticket_alert.log
+        path: logs/ticket_alert.log
         retention-days: 7

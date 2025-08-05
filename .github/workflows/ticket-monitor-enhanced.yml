@@ -1,0 +1,84 @@
+name: Enhanced Ticket Monitor
+
+on:
+  schedule:
+    # Run every 30 minutes from 9 AM to 11 PM IST (3:30 AM to 5:30 PM UTC)
+    - cron: '*/30 3-17 * * *'
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Run in test mode (send test email)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  check-tickets:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+    
+    - name: Create required directories
+      run: |
+        mkdir -p logs
+        mkdir -p state
+    
+    - name: Validate environment
+      env:
+        EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+        EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      run: |
+        if [ -z "$EMAIL_FROM" ] || [ -z "$EMAIL_TO" ] || [ -z "$EMAIL_PASSWORD" ]; then
+          echo "❌ Error: Email secrets not configured!"
+          echo "Please add EMAIL_FROM, EMAIL_TO, and EMAIL_PASSWORD to GitHub Secrets"
+          exit 1
+        fi
+        echo "✅ Environment validated"
+    
+    - name: Test email (if requested)
+      if: ${{ inputs.test_mode }}
+      env:
+        EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+        EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      run: |
+        python -m ticket_alert.cli --test-email
+    
+    - name: Run ticket check
+      if: ${{ !inputs.test_mode }}
+      env:
+        EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+        EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      run: |
+        python -m ticket_alert.cli --once --verbose
+    
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ticket-logs-${{ github.run_number }}
+        path: |
+          logs/
+          state.json
+        retention-days: 7
+    
+    - name: Check run status
+      if: failure()
+      run: |
+        echo "❌ Ticket check failed! Check the logs for details."
+        cat logs/ticket_alert.log || true
