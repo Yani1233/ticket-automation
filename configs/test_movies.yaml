@@ -1,0 +1,38 @@
+# Test configuration for currently showing movies
+
+# Email settings
+email:
+  smtp_server: smtp.gmail.com
+  smtp_port: 587
+  from_email: raja.arun91@gmail.com
+  to_email: arunrajadh@gmail.com
+  password: psalkdurpulbemep
+
+
+# Check interval in minutes
+check_interval_minutes: 30
+
+# Test with currently showing movies
+platforms:
+  - name: "BookMyShow Kingdom"
+    url: "https://in.bookmyshow.com/movies/bengaluru/kingdom/ET00433664"
+    selector: "button[data-phase='postRelease'], .sc-qswwm9-0, .book-tickets"
+    detection_method: "element_exists"
+    keywords: ["book tickets", "show times"]
+    
+  # - name: "BookMyShow - Mufasa"
+  #   url: "https://in.bookmyshow.com/movies/bengaluru/mufasa-the-lion-king/ET00388045"
+  #   selector: "button[data-phase='postRelease'], .sc-qswwm9-0, .book-tickets"
+  #   detection_method: "element_exists"
+  #   keywords: ["book tickets", "show times"]
+    
+  # - name: "BookMyShow - Movies Page"
+  #   url: "https://in.bookmyshow.com/explore/movies-bengaluru"
+  #   selector: ".sc-133848s-2"
+  #   detection_method: "text_contains"
+  #   keywords: ["book tickets", "show times", "book"]
+
+# Logging settings
+logging:
+  level: INFO
+  file: test_alert.log
