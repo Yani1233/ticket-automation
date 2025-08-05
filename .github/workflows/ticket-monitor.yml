@@ -32,7 +32,7 @@ jobs:
         EMAIL_TO: ${{ secrets.EMAIL_TO }}
         EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
       run: |
-        python -m ticket_alert.cli --once
+        python -m ticket_alert.cli --config configs/coolie-cloud.yaml --once
     
     - name: Upload logs
       if: always()

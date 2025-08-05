@@ -1,0 +1,37 @@
+name: Simple Ticket Monitor
+
+on:
+  schedule:
+    # Run every 30 minutes
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install minimal requirements
+      run: |
+        pip install requests beautifulsoup4
+    
+    - name: Run simple check
+      env:
+        EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+        EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      run: |
+        python scripts/github_check.py
+    
+    - name: Alternative - Use curl to check
+      if: always()
+      run: |
+        echo "=== Direct curl check ==="
+        curl -s -L "https://paytm.com/movies/coolie-movie-detail-172677" | grep -i "book" || echo "No booking found"

@@ -18,8 +18,18 @@ class TicketAlert:
         self.config = self.load_config(config_path)
         self.state_file = 'state.json'
         self.session = requests.Session()
+        # More comprehensive headers to avoid 403 errors
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Cache-Control': 'max-age=0'
         })
 
     def load_config(self, config_path: str) -> Dict:
@@ -60,7 +70,23 @@ class TicketAlert:
         try:
             logger.info(f"Checking {platform_name}...")
             
-            response = self.session.get(url, timeout=10)
+            # Add platform-specific headers if needed
+            headers = self.session.headers.copy()
+            if 'bookmyshow' in url:
+                headers['Referer'] = 'https://in.bookmyshow.com/'
+            elif 'pvrcinemas' in url:
+                headers['Referer'] = 'https://www.pvrcinemas.com/'
+            
+            response = self.session.get(url, headers=headers, timeout=15)
+            
+            # Handle 403 specifically
+            if response.status_code == 403:
+                logger.warning(f"{platform_name} returned 403 Forbidden - site may be blocking automated requests")
+                # Try with a small delay and different headers
+                time.sleep(2)
+                headers['User-Agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                response = self.session.get(url, headers=headers, timeout=15)
+            
             response.raise_for_status()
             
             soup = BeautifulSoup(response.content, 'html.parser')
