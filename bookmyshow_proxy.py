@@ -32,8 +32,7 @@ class ProxyBookMyShowMonitor:
         self.target_screens = [
             "PVR Soul Spirit",
             "PVR Centro Mall",
-            "PVR Nexus Koramangala",
-            "PVR Felicity Mall"
+            "PVR Nexus Koramangala"
         ]
         
         # Free proxy services (use cautiously)

@@ -50,8 +50,7 @@ class EnhancedBookMyShowMonitor:
         self.target_screens = [
             "PVR Soul Spirit",
             "PVR Centro Mall", 
-            "PVR Nexus Koramangala",
-            "PVR Felicity Mall"
+            "PVR Nexus Koramangala"
         ]
         
         # BookMyShow URLs - try multiple endpoints
@@ -264,8 +263,7 @@ class EnhancedBookMyShowMonitor:
         pvr_screens = {
             'soul spirit': 'PVR Soul Spirit Central Mall, Bellandur',
             'centro': 'PVR Centro Mall',
-            'nexus koramangala': 'PVR Nexus Koramangala',
-            'felicity': 'PVR Felicity Mall'
+            'nexus koramangala': 'PVR Nexus Koramangala'
         }
         
         for pvr_key, pvr_name in pvr_screens.items():
@@ -323,7 +321,6 @@ Your Preferred PVR Screens:
 • PVR Soul Spirit
 • PVR Centro Mall  
 • PVR Nexus Koramangala
-• PVR Felicity Mall
 
 Happy Booking! 🎬✨
 """

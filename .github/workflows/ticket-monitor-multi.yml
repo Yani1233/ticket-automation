@@ -34,9 +34,24 @@ jobs:
     - name: Install Chrome for Selenium
       if: ${{ inputs.approach == 'selenium' || inputs.approach == 'all' || inputs.approach == '' }}
       run: |
-        sudo apt-get update
-        sudo apt-get install -y chromium-browser chromium-chromedriver
-        sudo ln -s /usr/bin/chromium-browser /usr/bin/google-chrome
+        # Check if Chrome is already installed
+        if ! command -v google-chrome &> /dev/null; then
+          echo "Installing Chrome..."
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+          # Only create symlink if it doesn't exist
+          if [ ! -e /usr/bin/google-chrome ]; then
+            sudo ln -s /usr/bin/chromium-browser /usr/bin/google-chrome
+          fi
+        else
+          echo "Chrome is already installed"
+        fi
+        
+        # Verify installation
+        google-chrome --version || chromium-browser --version || echo "Chrome not found"
+        
+        # Install Chrome driver for Selenium
+        sudo apt-get install -y chromium-chromedriver || true
     
     - name: Install dependencies
       run: |

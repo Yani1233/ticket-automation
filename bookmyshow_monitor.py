@@ -49,8 +49,7 @@ class BookMyShowMonitor:
         self.target_screens = [
             "PVR Soul Spirit",
             "PVR Centro Mall", 
-            "PVR Nexus Koramangala",
-            "PVR Felicity Mall"
+            "PVR Nexus Koramangala"
         ]
         
         # BookMyShow URL for Coolie tickets (14th August 2025)
@@ -164,8 +163,7 @@ class BookMyShowMonitor:
         pvr_screens = {
             'soul spirit': 'PVR Soul Spirit Central Mall, Bellandur',
             'centro': 'PVR Centro Mall',
-            'nexus koramangala': 'PVR Nexus Koramangala', 
-            'felicity': 'PVR Felicity Mall'
+            'nexus koramangala': 'PVR Nexus Koramangala'
         }
         
         for pvr_key, pvr_name in pvr_screens.items():
@@ -261,10 +259,6 @@ class BookMyShowMonitor:
         # Check for PVR Nexus Koramangala
         if any(term in all_text_lower for term in ['nexus koramangala', 'pvr nexus', 'koramangala']):
             target_screens_on_page.append("PVR Nexus Koramangala")
-        
-        # Check for PVR Felicity
-        if any(term in all_text_lower for term in ['felicity', 'pvr felicity']):
-            target_screens_on_page.append("PVR Felicity Mall")
         
         # Determine overall booking status with PVR-specific logic
         pvr_screens_with_times = [screen for screen in active_cinemas if 'pvr' in screen.lower()]
@@ -429,7 +423,6 @@ Your Preferred PVR Screens:
 • PVR Soul Spirit
 • PVR Centro Mall  
 • PVR Nexus Koramangala
-• PVR Felicity Mall
 
 Happy Booking! 🎬✨
 """

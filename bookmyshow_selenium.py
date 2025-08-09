@@ -41,8 +41,7 @@ class SeleniumBookMyShowMonitor:
         self.target_screens = [
             "PVR Soul Spirit",
             "PVR Centro Mall",
-            "PVR Nexus Koramangala",
-            "PVR Felicity Mall"
+            "PVR Nexus Koramangala"
         ]
         
         self.email_config = {
@@ -68,6 +67,7 @@ class SeleniumBookMyShowMonitor:
                 options.add_argument('--no-sandbox')
                 options.add_argument('--disable-dev-shm-usage')
                 options.add_argument('--disable-gpu')
+                options.add_argument('--disable-software-rasterizer')
                 
             # Additional options to avoid detection
             options.add_argument('--disable-blink-features=AutomationControlled')
@@ -75,13 +75,27 @@ class SeleniumBookMyShowMonitor:
             options.add_argument('--start-maximized')
             options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
             
-            # Create driver with undetected-chromedriver
-            self.driver = uc.Chrome(options=options, version_main=120)
+            # Try different driver initialization methods
+            try:
+                # Try undetected-chromedriver first
+                self.driver = uc.Chrome(options=options, version_main=None)  # Auto-detect version
+            except:
+                try:
+                    # Fallback to standard Chrome with custom binary location
+                    if os.getenv('GITHUB_ACTIONS'):
+                        options.binary_location = '/usr/bin/chromium-browser'
+                    self.driver = uc.Chrome(options=options, driver_executable_path='/usr/bin/chromedriver')
+                except:
+                    # Last resort: use base Selenium
+                    from selenium import webdriver
+                    self.driver = webdriver.Chrome(options=options)
+            
             logger.info("✅ Chrome driver initialized successfully")
             return True
             
         except Exception as e:
             logger.error(f"Failed to setup driver: {e}")
+            logger.error("Try installing: sudo apt-get install chromium-browser chromium-chromedriver")
             return False
 
     def check_availability(self):

@@ -58,8 +58,7 @@ class CloudScraperMonitor:
         self.target_screens = [
             "PVR Soul Spirit",
             "PVR Centro Mall",
-            "PVR Nexus Koramangala",
-            "PVR Felicity Mall"
+            "PVR Nexus Koramangala"
         ]
         
         # Multiple URLs to try
