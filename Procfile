@@ -1,1 +1,0 @@
-worker: python ticket_alert.py
