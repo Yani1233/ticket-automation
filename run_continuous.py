@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Simple continuous monitor for Coolie tickets
-Runs every 30 minutes without cron
+Runs every 5 minutes without cron
 """
 
 import time
@@ -33,16 +33,16 @@ def run_monitor():
 
 def main():
     print("🎬 COOLIE TICKET MONITOR - CONTINUOUS MODE")
-    print("Checking every 30 minutes")
+    print("Checking every 5 minutes")
     print("Press Ctrl+C to stop")
     print("")
     
     while True:
         try:
             run_monitor()
-            print(f"\n💤 Sleeping for 30 minutes... Next check at {(datetime.now().timestamp() + 1800)}")
-            time.sleep(1800)  # 30 minutes
-            
+            print(f"\n💤 Sleeping for 5 minutes... Next check at {(datetime.now().timestamp() + 300)}")
+            time.sleep(300)  # 5 minutes
+
         except KeyboardInterrupt:
             print("\n\n🛑 Monitor stopped")
             break
