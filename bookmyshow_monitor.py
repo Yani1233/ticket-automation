@@ -45,14 +45,17 @@ class BookMyShowMonitor:
             'Cache-Control': 'max-age=0'
         })
         
-        # Target screens - your preferred PVR locations
+        # Target screens - your preferred PVR locations (near Bellandur)
         self.target_screens = [
-            "PVR Soul Spirit",
-            "PVR Centro Mall", 
-            "PVR Nexus Koramangala"
+            "PVR Soul Spirit",  # Bellandur Central Mall
+            "PVR Vega City",  # Bannerghatta Road
+            "PVR Forum Mall",  # Koramangala
+            "PVR Nexus Koramangala",  # Koramangala
+            "PVR Brookefield",  # Brookefield, Marathahalli
+            "PVR Arena Mall"  # Domlur
         ]
         
-        # BookMyShow URL for Coolie tickets (14th August 2025)
+        # BookMyShow URL for Coolie tickets (14th August 2025) - This page shows all screens
         self.booking_url = "https://in.bookmyshow.com/movies/bengaluru/coolie/buytickets/ET00395817/20250814"
         
         # Email configuration
@@ -162,8 +165,11 @@ class BookMyShowMonitor:
         # Check for PVR screens specifically
         pvr_screens = {
             'soul spirit': 'PVR Soul Spirit Central Mall, Bellandur',
-            'centro': 'PVR Centro Mall',
-            'nexus koramangala': 'PVR Nexus Koramangala'
+            'vega city': 'PVR Vega City',
+            'forum mall': 'PVR Forum Mall Koramangala',
+            'nexus koramangala': 'PVR Nexus Koramangala',
+            'brookefield': 'PVR Brookefield',
+            'arena': 'PVR Arena Mall Domlur'
         }
         
         for pvr_key, pvr_name in pvr_screens.items():
@@ -252,13 +258,25 @@ class BookMyShowMonitor:
         if any(term in all_text_lower for term in ['soul spirit', 'soulspirit', 'pvr soul', 'central mall bellandur']):
             target_screens_on_page.append("PVR Soul Spirit Central Mall, Bellandur")
         
-        # Check for PVR Centro Mall  
-        if any(term in all_text_lower for term in ['centro', 'pvr centro']):
-            target_screens_on_page.append("PVR Centro Mall")
+        # Check for PVR Vega City
+        if any(term in all_text_lower for term in ['vega city', 'pvr vega', 'bannerghatta']):
+            target_screens_on_page.append("PVR Vega City")
+        
+        # Check for PVR Forum Mall
+        if any(term in all_text_lower for term in ['forum mall', 'pvr forum', 'forum koramangala']):
+            target_screens_on_page.append("PVR Forum Mall Koramangala")
         
         # Check for PVR Nexus Koramangala
-        if any(term in all_text_lower for term in ['nexus koramangala', 'pvr nexus', 'koramangala']):
+        if any(term in all_text_lower for term in ['nexus koramangala', 'pvr nexus']):
             target_screens_on_page.append("PVR Nexus Koramangala")
+        
+        # Check for PVR Brookefield
+        if any(term in all_text_lower for term in ['brookefield', 'pvr brookefield', 'marathahalli']):
+            target_screens_on_page.append("PVR Brookefield")
+        
+        # Check for PVR Arena Mall
+        if any(term in all_text_lower for term in ['arena mall', 'pvr arena', 'domlur']):
+            target_screens_on_page.append("PVR Arena Mall Domlur")
         
         # Determine overall booking status with PVR-specific logic
         pvr_screens_with_times = [screen for screen in active_cinemas if 'pvr' in screen.lower()]
@@ -419,10 +437,13 @@ TARGET SCREENS:
                 body += f"🔗 Booking URL: {self.booking_url}\n\n"
             
             body += """
-Your Preferred PVR Screens:
-• PVR Soul Spirit
-• PVR Centro Mall  
+Your Preferred PVR Screens (Near Bellandur):
+• PVR Soul Spirit (Bellandur Central Mall)
+• PVR Vega City (Bannerghatta Road)
+• PVR Forum Mall (Koramangala)
 • PVR Nexus Koramangala
+• PVR Brookefield (Marathahalli)
+• PVR Arena Mall (Domlur)
 
 Happy Booking! 🎬✨
 """
