@@ -44,5 +44,13 @@ htmlcov/
 *.tmp
 *.bak
 
+# Debug and test files
+debug_*.txt
+debug_*.py
+test_*.py
+monitor_debug_*.txt
+*_debug.txt
+
+# Virtual environments
 venv/
 .venv/

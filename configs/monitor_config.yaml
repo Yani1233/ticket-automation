@@ -1,0 +1,73 @@
+# BookMyShow Monitor Configuration
+# This file contains advanced configuration options for the ticket monitor
+
+monitor:
+  # Target movie and date
+  movie: "Coolie"
+  date: "20250814"  # August 14, 2025
+  city: "bengaluru"
+  
+  # Preferred PVR locations in order of preference
+  target_screens:
+    - name: "PVR Soul Spirit"
+      location: "Central Mall, Bellandur"
+      priority: 1
+      keywords: ["soul spirit", "soulspirit", "pvr soul", "central mall bellandur"]
+    
+    - name: "PVR Centro Mall"
+      location: "Centro Mall"
+      priority: 2
+      keywords: ["centro", "pvr centro"]
+    
+    - name: "PVR Nexus Koramangala"
+      location: "Nexus Koramangala"
+      priority: 3
+      keywords: ["nexus koramangala", "pvr nexus", "koramangala"]
+    
+    - name: "PVR Felicity Mall"
+      location: "Felicity Mall"
+      priority: 4
+      keywords: ["felicity", "pvr felicity"]
+
+  # Monitoring settings
+  check_interval_minutes: 5
+  max_retries: 3
+  timeout_seconds: 30
+  
+  # Email alert settings
+  email:
+    enabled: true
+    send_on_opening: true  # Send when booking is opening soon
+    send_on_open: true     # Send when booking is fully open
+    send_on_found: false   # Don't send when just found but not ready
+
+# HTTP Settings
+http:
+  user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+  accept_encoding: "identity"  # Avoid compression issues
+  headers:
+    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+    Accept-Language: "en-US,en;q=0.9"
+    Connection: "keep-alive"
+    Cache-Control: "max-age=0"
+
+# Detection patterns
+detection:
+  time_patterns:
+    - '\d{1,2}:\d{2} [ap]m'
+    - '\b\d{1,2}:\d{2}\s*(?:am|pm|AM|PM)\b'
+  
+  booking_indicators:
+    - "book tickets"
+    - "buy tickets"
+    - "select seats"
+    - "showtimes"
+    - "book now"
+  
+  cinema_indicators:
+    - "cinema"
+    - "cinemas"
+    - "theatre"
+    - "theater"
+    - "multiplex"
+    - "pvr"

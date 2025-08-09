@@ -35,7 +35,7 @@ class BookMyShowMonitor:
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Encoding': 'identity',  # Avoid compression issues
             'Connection': 'keep-alive',
             'Referer': 'https://in.bookmyshow.com/',
             'Upgrade-Insecure-Requests': '1',
@@ -50,7 +50,7 @@ class BookMyShowMonitor:
             "PVR Soul Spirit",
             "PVR Centro Mall", 
             "PVR Nexus Koramangala",
-            "PNR felicity mall"  # Note: keeping as you specified, might be "PVR Felicity Mall"
+            "PVR Felicity Mall"
         ]
         
         # BookMyShow URL for Coolie tickets (14th August 2025)
@@ -74,12 +74,22 @@ class BookMyShowMonitor:
             
             response = self.session.get(self.booking_url, timeout=30)
             logger.info(f"Response status: {response.status_code}")
+            logger.info(f"Response encoding: {response.encoding}")
+            logger.info(f"Content-Type: {response.headers.get('content-type', 'not specified')}")
             
             if response.status_code != 200:
                 logger.error(f"Failed to access booking page: {response.status_code}")
                 return {}
             
-            soup = BeautifulSoup(response.content, 'html.parser')
+            # Set proper encoding
+            if response.encoding is None:
+                response.encoding = 'utf-8'
+            
+            soup = BeautifulSoup(response.text, 'html.parser')  # Use response.text instead of response.content
+            
+            # Extract text properly with correct encoding
+            page_text = soup.get_text()
+            all_text_lower = page_text.lower()
             
             # Log page title for verification
             title = soup.find('title')
@@ -87,7 +97,7 @@ class BookMyShowMonitor:
                 logger.info(f"Page title: {title.get_text().strip()}")
             
             # Find all cinemas/screens on the page
-            available_screens = self.extract_available_screens(soup)
+            available_screens = self.extract_available_screens(soup, page_text)
             
             # Check which target screens have availability or are ready for booking
             matching_screens = {}
@@ -116,7 +126,7 @@ class BookMyShowMonitor:
             logger.info(f"📊 Summary: {target_screens_found} target screens found, {len(matching_screens)} ready for booking")
             
             if matching_screens:
-                logger.info(f"� Found {len(matching_screens)} target screens ready for booking!")
+                logger.info(f"🎉 Found {len(matching_screens)} target screens ready for booking!")
                 return matching_screens
             elif target_screens_found > 0:
                 logger.info(f"🎯 Found {target_screens_found} target screens but booking not yet open")
@@ -137,41 +147,97 @@ class BookMyShowMonitor:
             logger.error(f"Error checking availability: {e}")
             return {}
 
-    def extract_available_screens(self, soup):
+    def extract_available_screens(self, soup, page_text):
         """Extract available screens and detect when booking opens"""
         available_screens = {}
-        page_text = soup.get_text()
         all_text_lower = page_text.lower()
         
         logger.info("🔍 Checking for cinema availability and booking status...")
         
         # Strategy 1: Look for actual cinema names with showtimes 
-        lines = page_text.split('\n')
+        # Split by multiple possible delimiters since content might be on one line
+        import re
+        
         active_cinemas = []
         
-        import re
+        # Check for PVR screens specifically
+        pvr_screens = {
+            'soul spirit': 'PVR Soul Spirit Central Mall, Bellandur',
+            'centro': 'PVR Centro Mall',
+            'nexus koramangala': 'PVR Nexus Koramangala', 
+            'felicity': 'PVR Felicity Mall'
+        }
+        
+        for pvr_key, pvr_name in pvr_screens.items():
+            # Look for PVR screen mentions with flexible patterns
+            pvr_patterns = [
+                pvr_key,
+                pvr_key.replace(' ', ''),
+                f"pvr {pvr_key}",
+                pvr_name.lower()
+            ]
+            
+            pvr_found = False
+            for pattern in pvr_patterns:
+                if pattern in all_text_lower:
+                    # Look for showtimes near this PVR mention
+                    pvr_start = all_text_lower.find(pattern)
+                    pvr_section = all_text_lower[max(0, pvr_start-100):pvr_start+400]
+                    
+                    # Look for time patterns in the section
+                    time_patterns = re.findall(r'\d{1,2}:\d{2} [ap]m', pvr_section)
+                    
+                    if time_patterns:
+                        logger.info(f"🎯 Found {pvr_name} with {len(time_patterns)} showtimes!")
+                        available_screens[pvr_name] = {
+                            'showtimes': time_patterns,
+                            'source': 'pvr_detection',
+                            'status': 'BOOKING_OPEN'
+                        }
+                        active_cinemas.append(pvr_name)
+                        pvr_found = True
+                        break
+                    else:
+                        # PVR mentioned but no showtimes - might be opening soon
+                        logger.info(f"🔍 Found {pvr_name} mentioned but no showtimes yet")
+                        available_screens[pvr_name] = {
+                            'showtimes': [],
+                            'source': 'pvr_detection',
+                            'status': 'MENTIONED_NO_TIMES'
+                        }
+                        pvr_found = True
+                        break
+            
+            if not pvr_found:
+                # Check if PVR brand is mentioned (general booking might be opening)
+                if 'pvr' in all_text_lower and any(keyword in all_text_lower for keyword in pvr_key.split()):
+                    logger.info(f"🔍 Partial match for {pvr_name} - booking may be opening")
+        
+        # Also look for other cinemas using a broader approach
+        lines = page_text.split('\n')
         for i, line in enumerate(lines):
             line = line.strip()
-            if not line or len(line) > 300:
+            if not line or len(line) > 500:
                 continue
                 
             line_lower = line.lower()
             
             # Check if this line contains a cinema name
-            if any(keyword in line_lower for keyword in ['cinema', 'cinemas', 'theatre', 'theater', 'multiplex']):
-                # Look for time patterns in nearby lines
-                context_lines = lines[max(0, i-2):min(len(lines), i+3)]
-                context_text = ' '.join(context_lines)
+            cinema_indicators = ['cinema', 'cinemas', 'theatre', 'theater', 'multiplex', 'pvr']
+            if any(keyword in line_lower for keyword in cinema_indicators):
+                # Look for time patterns in this line and nearby lines
+                context_lines = lines[max(0, i-1):min(len(lines), i+2)]
+                context_text = ' '.join([line] + context_lines)
                 
                 time_patterns = re.findall(r'\b\d{1,2}:\d{2}\s*(?:am|pm|AM|PM)\b', context_text)
-                if time_patterns:
+                if time_patterns and line not in [s for s in available_screens.keys()]:
                     available_screens[line] = {
                         'showtimes': time_patterns,
                         'source': 'active_showtimes',
                         'status': 'BOOKING_OPEN'
                     }
                     active_cinemas.append(line)
-                    logger.info(f"✅ ACTIVE CINEMA: {line}")
+                    logger.info(f"🎬 Active cinema found: {line[:50]}... with {len(time_patterns)} showtimes")
         
         # Strategy 2: Check if BookMyShow page shows general booking availability
         booking_indicators = ['book tickets', 'buy tickets', 'select seats', 'showtimes', 'book now']
@@ -184,24 +250,33 @@ class BookMyShowMonitor:
         # Strategy 3: Always monitor for target screens (even if not active yet)
         target_screens_on_page = []
         
-        # Check for Soul Spirit
-        if any(term in all_text_lower for term in ['soul spirit', 'soulspirit']):
+        # Check for PVR Soul Spirit
+        if any(term in all_text_lower for term in ['soul spirit', 'soulspirit', 'pvr soul', 'central mall bellandur']):
             target_screens_on_page.append("PVR Soul Spirit Central Mall, Bellandur")
         
-        # Check for Centro Mall  
-        if 'centro' in all_text_lower:
+        # Check for PVR Centro Mall  
+        if any(term in all_text_lower for term in ['centro', 'pvr centro']):
             target_screens_on_page.append("PVR Centro Mall")
         
-        # Check for Nexus Koramangala
-        if 'nexus' in all_text_lower and 'koramangala' in all_text_lower:
+        # Check for PVR Nexus Koramangala
+        if any(term in all_text_lower for term in ['nexus koramangala', 'pvr nexus', 'koramangala']):
             target_screens_on_page.append("PVR Nexus Koramangala")
         
-        # Check for Felicity
-        if 'felicity' in all_text_lower:
+        # Check for PVR Felicity
+        if any(term in all_text_lower for term in ['felicity', 'pvr felicity']):
             target_screens_on_page.append("PVR Felicity Mall")
         
-        # Determine overall booking status
-        if len(active_cinemas) > 0:
+        # Determine overall booking status with PVR-specific logic
+        pvr_screens_with_times = [screen for screen in active_cinemas if 'pvr' in screen.lower()]
+        target_screens_with_times = [screen for screen in active_cinemas if any(target.lower() in screen.lower() for target in self.target_screens)]
+        
+        if target_screens_with_times:
+            booking_status = "TARGET_SCREENS_OPEN"
+            logger.info(f"🎉 TARGET PVR SCREENS ARE LIVE! {len(target_screens_with_times)} target screens with showtimes")
+        elif pvr_screens_with_times:
+            booking_status = "PVR_OPENING"
+            logger.info(f"🎬 PVR Booking appears to be OPENING - {len(pvr_screens_with_times)} PVR screens active")
+        elif len(active_cinemas) > 0:
             booking_status = "SOME_CINEMAS_OPEN"
             logger.info(f"🎬 Booking appears to be ACTIVE - {len(active_cinemas)} cinemas showing Coolie")
         elif has_showtimes and general_booking_available:
@@ -214,23 +289,35 @@ class BookMyShowMonitor:
         # Add target screens with appropriate status
         for target in target_screens_on_page:
             # Check if this target screen has actual showtimes
-            target_has_showtimes = any(target.lower() in cinema.lower() for cinema in active_cinemas)
+            target_has_showtimes = any(target.lower() in cinema.lower() or 
+                                     any(target_word in cinema.lower() for target_word in target.lower().split()) 
+                                     for cinema in active_cinemas)
+            
+            # Check if it's a PVR screen
+            is_pvr_screen = 'pvr' in target.lower()
             
             if target_has_showtimes:
                 status = "BOOKING_OPEN"
                 note = "🎉 TARGET SCREEN IS LIVE! Book now!"
+            elif booking_status == "TARGET_SCREENS_OPEN":
+                status = "BOOKING_OPEN"
+                note = "🎉 Target screens are opening! Check booking page!"
+            elif booking_status == "PVR_OPENING" and is_pvr_screen:
+                status = "BOOKING_OPENING"
+                note = "🚀 PVR booking is opening! Your screen should be available soon!"
             elif booking_status == "SOME_CINEMAS_OPEN":
                 status = "BOOKING_OPENING" 
-                note = "Booking is opening - target screen should be available soon!"
+                note = "⏰ Booking is opening - target screen should be available soon!"
             else:
                 status = "WAITING"
-                note = "Target screen detected but booking not yet open"
+                note = "👀 Target screen detected but booking not yet open"
             
             available_screens[f"🎯 {target}"] = {
                 'showtimes': [],
                 'source': 'target_monitoring',
                 'status': status,
-                'note': note
+                'note': note,
+                'is_pvr': is_pvr_screen
             }
             logger.info(f"🎯 TARGET MONITORED: {target} (Status: {status})")
         
@@ -272,16 +359,25 @@ class BookMyShowMonitor:
             return
         
         try:
-            # Determine alert type
+            # Determine alert type with PVR-specific logic
             has_open_booking = any(details.get('status') == 'BOOKING_OPEN' for details in matching_screens.values())
             has_opening_booking = any(details.get('status') == 'BOOKING_OPENING' for details in matching_screens.values())
+            has_pvr_screens = any(details.get('is_pvr', False) for details in matching_screens.values())
             
             if has_open_booking:
-                subject = f"🎬🚨 COOLIE BOOKING OPEN! - {len(matching_screens)} Target Screens Ready!"
-                urgency = "BOOK NOW!"
+                if has_pvr_screens:
+                    subject = f"🎬🚨 PVR COOLIE BOOKING OPEN! - {len(matching_screens)} Target Screens Ready!"
+                    urgency = "BOOK NOW - PVR LIVE!"
+                else:
+                    subject = f"🎬🚨 COOLIE BOOKING OPEN! - {len(matching_screens)} Target Screens Ready!"
+                    urgency = "BOOK NOW!"
             elif has_opening_booking:
-                subject = f"🎬⏰ COOLIE Booking Opening Soon - {len(matching_screens)} Target Screens Detected!"
-                urgency = "Be Ready!"
+                if has_pvr_screens:
+                    subject = f"🎬⏰ PVR COOLIE Booking Opening! - {len(matching_screens)} Target Screens Detected!"
+                    urgency = "PVR Opening - Be Ready!"
+                else:
+                    subject = f"🎬⏰ COOLIE Booking Opening Soon - {len(matching_screens)} Target Screens Detected!"
+                    urgency = "Be Ready!"
             else:
                 subject = f"🎬📍 COOLIE Target Screens Found - {len(matching_screens)} Locations"
                 urgency = "Monitor Active"
@@ -309,7 +405,10 @@ TARGET SCREENS:
                 body += "\n"
             
             body += f"""
-📱 BOOKING URL: {self.booking_url}
+📱 BOOKING URL: 
+{self.booking_url}
+
+🔗 Quick Book Link: {self.booking_url}
 
 ⏰ Alert Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
@@ -317,19 +416,22 @@ TARGET SCREENS:
             
             if has_open_booking:
                 body += "🏃‍♂️💨 URGENT: Booking is OPEN! Book your tickets now!\n"
+                body += f"👆 Click the link above or copy this URL: {self.booking_url}\n\n"
             elif has_opening_booking:
                 body += "⏰ Booking appears to be opening soon. Stay ready!\n"
+                body += f"🔗 Bookmark this URL: {self.booking_url}\n\n"
             else:
                 body += "👀 Keep monitoring - target screens detected!\n"
+                body += f"🔗 Booking URL: {self.booking_url}\n\n"
             
             body += """
-Your Preferred Screens:
+Your Preferred PVR Screens:
 • PVR Soul Spirit
 • PVR Centro Mall  
 • PVR Nexus Koramangala
 • PVR Felicity Mall
 
-Happy Booking! �✨
+Happy Booking! 🎬✨
 """
             
             # Send email

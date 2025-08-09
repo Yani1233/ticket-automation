@@ -34,6 +34,8 @@ jobs:
         EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
         EMAIL_TO: ${{ secrets.EMAIL_TO }}
       run: |
+        echo "🎬 Starting Coolie PVR ticket monitor..."
+        echo "Target screens: PVR Soul Spirit, PVR Centro Mall, PVR Nexus Koramangala, PVR Felicity Mall"
         python bookmyshow_monitor.py --once
     
     - name: Upload logs on failure
