@@ -1,0 +1,56 @@
+[3J[H[2J2025-08-11 11:28:00,346 - INFO - 🎬 Starting BookMyShow monitor...
+2025-08-11 11:28:00,346 - INFO - ============================================================
+2025-08-11 11:28:00,346 - INFO - 🎬 COOLIE TICKET MONITOR - CONTINUOUS MODE
+2025-08-11 11:28:00,346 - INFO - Checking every 5 minutes
+2025-08-11 11:28:00,346 - INFO - Target screens: PVR Soul Spirit, PVR Vega City, PVR Forum Mall, PVR Nexus Koramangala, PVR Brookefield, PVR Arena Mall
+2025-08-11 11:28:00,346 - INFO - ============================================================
+2025-08-11 11:28:00,346 - INFO - 🎬 Checking BookMyShow for Coolie tickets...
+2025-08-11 11:28:00,346 - INFO - URL: https://in.bookmyshow.com/movies/bengaluru/coolie/buytickets/ET00395817/20250814
+2025-08-11 11:28:00,346 - INFO - Target screens: PVR Soul Spirit, PVR Vega City, PVR Forum Mall, PVR Nexus Koramangala, PVR Brookefield, PVR Arena Mall
+2025-08-11 11:28:00,821 - INFO - Response status: 200
+2025-08-11 11:28:00,821 - INFO - Response encoding: utf-8
+2025-08-11 11:28:00,821 - INFO - Content-Type: text/html; charset=utf-8
+2025-08-11 11:28:00,851 - INFO - Page title: Coolie Movie Showtimes in Bengaluru & Online Ticket Booking
+2025-08-11 11:28:00,851 - INFO - 🔍 Checking for cinema availability and booking status...
+2025-08-11 11:28:00,851 - INFO - 🔍 Partial match for PVR Vega City - booking may be opening
+2025-08-11 11:28:00,851 - INFO - 🔍 Partial match for PVR Forum Mall Koramangala - booking may be opening
+2025-08-11 11:28:00,851 - INFO - 🔍 Partial match for PVR Nexus Koramangala - booking may be opening
+2025-08-11 11:28:00,852 - INFO - ⏳ Booking not yet open - no active showtimes found
+2025-08-11 11:28:00,852 - INFO - 🎯 TARGET MONITORED: PVR Vega City (Status: WAITING)
+2025-08-11 11:28:00,852 - INFO - 📊 Booking Status: NOT_OPEN_YET
+2025-08-11 11:28:00,852 - INFO - 📊 Active cinemas: 0
+2025-08-11 11:28:00,852 - INFO - 📊 Target screens found: 1
+2025-08-11 11:28:00,852 - INFO - 📊 Time patterns detected: 0
+2025-08-11 11:28:00,852 - INFO - 🎯 Target screen found but not ready: 🎯 PVR Vega City (Status: WAITING)
+2025-08-11 11:28:00,852 - INFO - 📊 Summary: 1 target screens found, 0 ready for booking
+2025-08-11 11:28:00,852 - INFO - 🎯 Found 1 target screens but booking not yet open
+2025-08-11 11:28:00,852 - INFO - Available target screens:
+2025-08-11 11:28:00,852 - INFO -   - 🎯 PVR Vega City (WAITING)
+2025-08-11 11:28:00,852 - INFO - ⏳ No target screens available. Sleeping for 5 minutes...
+2025-08-11 11:28:02,351 - INFO - 🏛️ Starting District.in monitor...
+2025-08-11 11:28:02,352 - INFO - 🎭 District.in Monitor initialized
+2025-08-11 11:28:02,352 - INFO - 🎯 Target screens: PVR Soul Spirit, PVR Centro Mall, PVR Nexus Koramangala
+2025-08-11 11:28:02,352 - INFO - 📧 Email notifications: 3 recipients
+2025-08-11 11:28:02,352 - INFO - 📞 Voice calls: 3 numbers (enabled)
+2025-08-11 11:28:02,352 - INFO - ============================================================
+2025-08-11 11:28:02,352 - INFO - 🎭 DISTRICT.IN MONITOR - CONTINUOUS MODE
+2025-08-11 11:28:02,352 - INFO - Checking every 5 minutes
+2025-08-11 11:28:02,352 - INFO - Target screens: PVR Soul Spirit, PVR Centro Mall, PVR Nexus Koramangala
+2025-08-11 11:28:02,352 - INFO - ============================================================
+2025-08-11 11:28:02,352 - INFO - 🔥 Warming up District.in session...
+2025-08-11 11:28:02,770 - INFO - ✅ Homepage visited successfully
+2025-08-11 11:28:06,001 - INFO - ✅ Movies page visited successfully
+2025-08-11 11:28:08,726 - INFO - 🔥 Session warmed up successfully
+2025-08-11 11:28:08,726 - INFO - 🎭 Checking District.in for Coolie tickets: https://www.district.in/movies/coolie-movie-tickets-in-bengaluru-MV172677?frmtid=ZcW3aqXSzc
+2025-08-11 11:28:12,971 - INFO - 📊 District.in Response Status: 200
+2025-08-11 11:28:13,037 - INFO - ❌ No target screens detected on District.in page
+2025-08-11 11:28:13,037 - INFO - 📊 Validation Results:
+2025-08-11 11:28:13,037 - INFO -    - Screens found: 0
+2025-08-11 11:28:13,038 - INFO -    - Coolie context: True
+2025-08-11 11:28:13,038 - INFO -    - Strong booking indicators: False
+2025-08-11 11:28:13,038 - INFO -    - Weak booking indicators: True
+2025-08-11 11:28:13,038 - INFO -    - Coolie showtimes confirmed: False
+2025-08-11 11:28:13,038 - INFO -    - Valid showtimes: 0
+2025-08-11 11:28:13,038 - INFO -    - Has bookable tickets: False
+2025-08-11 11:28:13,038 - INFO - ⏳ District.in: No target screens found yet.
+2025-08-11 11:28:13,038 - INFO - 💤 Waiting 5 minutes before next check...
